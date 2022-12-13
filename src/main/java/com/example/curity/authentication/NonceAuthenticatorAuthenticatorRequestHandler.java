@@ -46,9 +46,9 @@ public final class NonceAuthenticatorAuthenticatorRequestHandler implements Auth
             throw _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "Unknown nonce");
         }
 
-        _upm.saveUsername(username);
-
         @Nullable String subject = subjectAttributes.get().get("subject").getValue().toString();
+        _upm.saveUsername(subject);
+
         return Optional.of(
                 new AuthenticationResult(
                         AuthenticationAttributes.of(
