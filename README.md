@@ -107,7 +107,7 @@ See the following resources on the Curity website.\
 The code example provides an end-to-end solution that can be run on a standalone computer:
 
 - [The Nonce Authenticator Pattern](https://curity.io/resources/learn/nonce-authenticator-pattern)
-- [Mobile Web Code Example](https://curity.io/resources/learn/mobile-web-integration-example/)
+- [Mobile Web SSO Code Example](https://curity.io/resources/learn/mobile-web-integration-example/)
 
 ## More Information
 
