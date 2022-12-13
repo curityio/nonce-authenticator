@@ -3,34 +3,69 @@
 [![Quality](https://img.shields.io/badge/quality-test-yellow)](https://curity.io/resources/code-examples/status/)
 [![Availability](https://img.shields.io/badge/availability-source-blue)](https://curity.io/resources/code-examples/status/)
 
-Mobile and web apps should be implemented as different clients, with different client IDs.
-These operate very differently, since mobile apps use opaque tokens whereas web apps use secure cookies.
-The challenge is to enable a credential for the web view, and to do so securely.
+## SSO Navigation
 
-It is not possible to start the web view with SSO cookies to allow seamless integration. Instead, the user will have to authenticate in the web view as well. This behavior is not intuitive nor appreciated from a UX perspective.
+In some setups, environmental limitations prevent OpenID Connect Single Sign On (SSO) from working.\
+In these cases, the user will first authenticate in a source application.\
+When navigating to a target application, re-authenticate will be required, with a suboptimal user experience.\
+The nonce authenticator pattern provides a solution to the double login problem.
 
-## Description ##
-The Nonce Authenticator allows for the mobile app the get a temporary nonce which the app uses when opening the web view. The web app would use that nonce to authenticate the user without any interaction. 
+## Mobile Use Case
 
-The mobile app would POST its ID Token to the anonymous endpoint of the Nonce Authenticator. The endpoint is constructed from `[BASE URL]` + `[Anonymous Authentication Endpoint]` + `[Authenticator Name]`. To try it, you can use cURL
+A common use case for this pattern is when navigating from a mobile app to a web app.\
+Different cookie jars may be used for SSO cookies, resulting in a double login by default.
+
+## Nonce Authenticator
+
+This plugin uses the [Nonce Token Issuer](https://curity.io/docs/idsvr-java-plugin-sdk/latest/se/curity/identityserver/sdk/service/NonceTokenIssuer.html) from the Java SDK to provide secure navigation based on one-time tokens.
+
+## Security Flow
+
+The source OAuth client must first extend its audience to include the nonce issuing endpoint.\
+Next, the client can post its ID token to the anonymous endpoint of the Nonce Authenticator.\
+The endpoint is constructed from `[BASE URL]` + `[Anonymous Authentication Endpoint]` + `[Authenticator Name]`.
+
 ```
-curl -X POST 'https://idsv.example.com/authentication/anonymous/nonce?token=' -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'token=eyJraWQi...'
+curl -X POST 'https://idsvr.example.com/authentication/anonymous/nonce1?token=' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'token=eyJraWQi...'
 ```
 
-The web view is opened with the nonce appended to the URL
+Next, the target OAuth client can be navigated to, using a nonce as a URL query parameter.\
+This value can only be used once, is very short lived, and is used immediately by the target application:
+
+```text
+https://www.example.com?nonce=abcd1234
 ```
-https://portal.example.com?nonce=abcd1234
+
+The target application then performs its own OpenID Connect redirect, which is guaranteed to use SSO:
+
+```text
+http://idsvr.example.com/oauth/v2/oauth-authorize
+    ?client_id=web-client
+    &redirect_uri=http%3A%2F%2Fwww.example.com%2F
+    &response_type=code
+    &code_challenge=l9QIPE4TFgW2y7STZDSWQ4Y4CQpO8W6VtELopzYHdNg
+    &code_challenge_method=S256
+    &state=NlAoISfdL1DxPdNGFBljlVuB1GDjgGARmqDcxtHhV8iKNYu6ECS2KOavDHpI3eLN
+    &scope=openid%20profile
+    &acr_values=urn:se:curity:authentication:nonce:nonce1
+    &login_hint=OFiicYQJYY2phWnD5nFMflid5Du82ycW
+        &prompt=login
 ```
 
-The web app would start an authentication flow with the `login_hint` parameter set to the nonce. If the web app is set up with only the Nonce Authenticator or an ACR value is set for the Nonce Authenticator, the end-user doesn't have to do anything and will experience SSO. An SSO cookie will also be set allowing the client to re-authenticate without the need for a new nonce.
+The following additional OpenID Connect parameters are used in this redirect:
 
-***NOTE*** Any authenticator can be used to authenticate the mobile app.
+| Parameter | Description |
+| --------- | ----------- |
+| acr_values | Forces the nonce authenticator to be used
+| login_hint | Supplies the nonce for validation |
+| prompt | Prevents nonce authentication being bypassed via SSO cookies |
 
-## Deploying the Plugin
+The target OAuth client then continues in the normal way.\
+It receives its own set of tokens with its own scopes and claims.
 
-Follow the below steps to run this plugin in deploy the plugin into Curity Identity Server. The plugin has to be installed on all instances.
-
-### Building the plugin
+## Building the plugin
 
 The plugin built by issuing the command
 
@@ -38,10 +73,7 @@ The plugin built by issuing the command
 mvn package
 ```
 
-This will produce a JAR file in the `target` directory, which can be installed.
-
-### Deploy the JAR Files
-
+This will produce JAR files in the `target` directory, which can be installed.\
 Gather the following files from the `target` folder:
 
 ```text
@@ -49,45 +81,31 @@ nonce-authneticator-*.jar
 jose4j-*.jar
 ```
 
-Deploy JAR files to the instances of the Curity Identity Server, in a plugins subfolder:
+Deploy JAR files to the instances of the Curity Identity Server, in a plugins subfolder.\
+The plugin group `authenticators.nonce` can be replaced with any other arbitrary name of your choice.
 
 ```text
 $IDSVR_HOME/usr/share/plugins/authenticators.nonce/*.jar
 ```
-The plugin group `authenticators.nonce` can be replaced with any other arbitrary name of your choice.
 
-### Configuration
+## Configuration
 
 The settings, except for the Nonce Validity, are to validate the incoming token. Below are some example values
 
-```text
-Audience: mobileapp
-Issuer: https://idsvr.example.com/oauth/v2/oauth-anonymous
-JWKS Endpoint: https://idsvr.example.com/oauth/v2/oauth-anonymous/jwks
-Nonce Validity: 10
-```
+| Property | Example Value |
+| -------- | ------------- |
+| Audience | https://idsvr.example.com/authentication/anonymous/nonce1
+| Issuer | https://idsvr.example.com/oauth/v2/oauth-anonymous
+| JWKS Endpoint | https://idsvr.example.com/oauth/v2/oauth-anonymous/jwks
+| Nonce Validity Seconds | 120 |
 
-## Security Considerations
+## Website Documentation
 
-The security involves using a proven ID token from the mobile app to bootstrap tokens for the web view application.
-A nonce is created by the mobile app. Since this can only be used once and is short lived, it is safe to pass it in a query string to the web view.
+See the following resources on the Curity website:
 
-## Cookie Usage
+- [The Nonce Authenticator Pattern](https://curity.io/resources/learn/nonce-authenticator-pattern)
+- [Mobile Web Code Example](https://curity.io/resources/learn/mobile-web-integration-example/)
 
-The nonce authenticator ensures that Single Sign On is achieved when a web view is invoked from a mobile app:
+## More Information
 
-- The first time a web view is invoked, there will be a redirect in the web view
-- The next time a web view is invoked, it will use a saved cookie, and there is no need for a redirect
-
-For this to work, you need to invoke web views in the system browser: a Chrome Custom Tab on Android, or a Safari View Controller on iOS. 
-Other web views will run a private browser session, requiring a redirect whenever the web view is invoked.
-
-## Conclusion
-With this technique, you can let a mobile app transfer a session to a web view. The end-user will experience SSO moving between the native app and web apps.
-
-More Information
-~~~~~~~~~~~~~~~~
-
-Please visit [curity.io](https://curity.io) for more information about the Curity Identity Server.
-
-[curity.io/plugins:](https://curity.io/docs/idsvr/latest/developer-guide/plugins/index.html#plugin-installation)
+Please visit [curity.io](https://curity.io/) for more information about the Curity Identity Server.
