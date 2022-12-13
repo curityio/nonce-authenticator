@@ -8,6 +8,7 @@ import se.curity.identityserver.sdk.authentication.AnonymousRequestHandler;
 import se.curity.identityserver.sdk.authentication.AuthenticatorRequestHandler;
 import se.curity.identityserver.sdk.plugin.ManagedObject;
 import se.curity.identityserver.sdk.plugin.descriptor.AuthenticatorPluginDescriptor;
+import se.curity.identityserver.sdk.web.RequestHandlerSet;
 
 import java.util.Map;
 import java.util.Optional;
@@ -45,5 +46,12 @@ public final class NonceAuthenticatorAuthenticatorPluginDescriptor implements Au
     public Optional<? extends ManagedObject<NonceAuthenticatorAuthenticatorPluginConfig>> createManagedObject(NonceAuthenticatorAuthenticatorPluginConfig configuration)
     {
         return Optional.of(new JwtValidator(configuration));
+    }
+
+    @Override
+    public RequestHandlerSet allowedHandlersForCrossSiteNonSafeRequests()
+    {
+        return RequestHandlerSet.of(
+                NonceAuthenticatorAuthenticatorRequestHandler.class);
     }
 }
