@@ -7,7 +7,7 @@
 
 In some setups, environmental limitations prevent OpenID Connect Single Sign On (SSO) from working.\
 In these cases, the user will first authenticate in a source application.\
-When navigating to a target application, re-authenticate will be required, with a suboptimal user experience.\
+When navigating to a target application, re-authentication will be required, with a suboptimal user experience.\
 The nonce authenticator pattern provides a solution to the double login problem.
 
 ## Mobile Use Case
@@ -18,13 +18,14 @@ Different cookie jars may be used for SSO cookies, resulting in a double login b
 ## Nonce Authenticator
 
 This plugin uses the [Nonce Token Issuer](https://curity.io/docs/idsvr-java-plugin-sdk/latest/se/curity/identityserver/sdk/service/NonceTokenIssuer.html) from the Java SDK.\
-This enables the source application to issue a nonce and the target application to validate it.
+This enables the source application to issue a nonce and use it to bootstrap SSO in the target application.\
+The target application uses the nonce, with is validated in a silent authentication flow.
 
 ## Security Flow
 
 The source OAuth client must first extend its audience to include the nonce issuing endpoint.\
-Next, the client can post its ID token to the anonymous endpoint of the Nonce Authenticator.\
 The endpoint format is `[BASE URL]` + `[Anonymous Authentication Endpoint]` + `[Authenticator Name]`.
+The client can post its ID token to this endpoint, to create a nonce:
 
 ```
 curl -X POST 'https://idsvr.example.com/authentication/anonymous/nonce1?token=eyJraWQi...' \
@@ -56,7 +57,7 @@ http://idsvr.example.com/oauth/v2/oauth-authorize
 ```
 
 The following additional OpenID Connect parameters are used in this redirect.\
-It can be issued on a hidden iframe so that the end user does not see a redirect.
+It can be issued on a hidden iframe so that the end user experience is seamless.
 
 | Parameter | Description |
 | --------- | ----------- |
@@ -65,13 +66,13 @@ It can be issued on a hidden iframe so that the end user does not see a redirect
 | prompt | Prevents nonce authentication being bypassed via SSO cookies |
 
 The target OAuth client then authenticates silently, with no user prompts.\
-The target client then receives its own set of tokens, with its own scopes and claims.
+The target OAuth client then receives its own set of tokens, with its own scopes and claims.
 
 ## Building the plugin
 
-The plugin built by issuing this command:
+The plugin is built by issuing this command:
 
-```
+```bash
 mvn package
 ```
 
@@ -82,7 +83,7 @@ nonce-authneticator-*.jar
 jose4j-*.jar
 ```
 
-Deploy these JAR files to the instances of the Curity Identity Server, in a plugins subfolder.\
+Deploy these JAR files to your instances of the Curity Identity Server, in a plugins subfolder.\
 The plugin group `authenticators.nonce` can be replaced with any other arbitrary name of your choice:
 
 ```text
