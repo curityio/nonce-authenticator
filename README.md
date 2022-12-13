@@ -17,25 +17,26 @@ Different cookie jars may be used for SSO cookies, resulting in a double login b
 
 ## Nonce Authenticator
 
-This plugin uses the [Nonce Token Issuer](https://curity.io/docs/idsvr-java-plugin-sdk/latest/se/curity/identityserver/sdk/service/NonceTokenIssuer.html) from the Java SDK to provide secure navigation based on one-time tokens.
+This plugin uses the [Nonce Token Issuer](https://curity.io/docs/idsvr-java-plugin-sdk/latest/se/curity/identityserver/sdk/service/NonceTokenIssuer.html) from the Java SDK.\
+This enables the source application to issue a nonce and the target application to validate it.
 
 ## Security Flow
 
 The source OAuth client must first extend its audience to include the nonce issuing endpoint.\
 Next, the client can post its ID token to the anonymous endpoint of the Nonce Authenticator.\
-The endpoint is constructed from `[BASE URL]` + `[Anonymous Authentication Endpoint]` + `[Authenticator Name]`.
+The endpoint format is `[BASE URL]` + `[Anonymous Authentication Endpoint]` + `[Authenticator Name]`.
 
 ```
-curl -X POST 'https://idsvr.example.com/authentication/anonymous/nonce1?token=' \
+curl -X POST 'https://idsvr.example.com/authentication/anonymous/nonce1?token=eyJraWQi...' \
     -H 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'token=eyJraWQi...'
+    --data-urlencode 'token=eyJraWQi...'
 ```
 
 Next, the target OAuth client can be navigated to, using a nonce as a URL query parameter.\
 This value can only be used once, is very short lived, and is used immediately by the target application:
 
 ```text
-https://www.example.com?nonce=abcd1234
+https://www.example.com?nonce=OFiicYQJYY2phWnD5nFMflid5Du82ycW
 ```
 
 The target application then performs its own OpenID Connect redirect, which is guaranteed to use SSO:
@@ -51,10 +52,11 @@ http://idsvr.example.com/oauth/v2/oauth-authorize
     &scope=openid%20profile
     &acr_values=urn:se:curity:authentication:nonce:nonce1
     &login_hint=OFiicYQJYY2phWnD5nFMflid5Du82ycW
-        &prompt=login
+    &prompt=login
 ```
 
-The following additional OpenID Connect parameters are used in this redirect:
+The following additional OpenID Connect parameters are used in this redirect.\
+It can be issued on a hidden iframe so that the end user does not see a redirect.
 
 | Parameter | Description |
 | --------- | ----------- |
@@ -62,27 +64,26 @@ The following additional OpenID Connect parameters are used in this redirect:
 | login_hint | Supplies the nonce for validation |
 | prompt | Prevents nonce authentication being bypassed via SSO cookies |
 
-The target OAuth client then continues in the normal way.\
-It receives its own set of tokens with its own scopes and claims.
+The target OAuth client then authenticates silently, with no user prompts.\
+The target client then receives its own set of tokens, with its own scopes and claims.
 
 ## Building the plugin
 
-The plugin built by issuing the command
+The plugin built by issuing this command:
 
 ```
 mvn package
 ```
 
-This will produce JAR files in the `target` directory, which can be installed.\
-Gather the following files from the `target` folder:
+This will produce JAR files in the `target` directory:
 
 ```text
 nonce-authneticator-*.jar
 jose4j-*.jar
 ```
 
-Deploy JAR files to the instances of the Curity Identity Server, in a plugins subfolder.\
-The plugin group `authenticators.nonce` can be replaced with any other arbitrary name of your choice.
+Deploy these JAR files to the instances of the Curity Identity Server, in a plugins subfolder.\
+The plugin group `authenticators.nonce` can be replaced with any other arbitrary name of your choice:
 
 ```text
 $IDSVR_HOME/usr/share/plugins/authenticators.nonce/*.jar
@@ -90,7 +91,7 @@ $IDSVR_HOME/usr/share/plugins/authenticators.nonce/*.jar
 
 ## Configuration
 
-The settings, except for the Nonce Validity, are to validate the incoming token. Below are some example values
+The plugin requires the following settings:
 
 | Property | Example Value |
 | -------- | ------------- |
@@ -101,7 +102,8 @@ The settings, except for the Nonce Validity, are to validate the incoming token.
 
 ## Website Documentation
 
-See the following resources on the Curity website:
+See the following resources on the Curity website.\
+The code example provides an end-to-end solution that can be run on a standalone computer:
 
 - [The Nonce Authenticator Pattern](https://curity.io/resources/learn/nonce-authenticator-pattern)
 - [Mobile Web Code Example](https://curity.io/resources/learn/mobile-web-integration-example/)
