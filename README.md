@@ -19,7 +19,7 @@ Different cookie jars may be used for SSO cookies, resulting in a double login b
 
 This plugin uses the [Nonce Token Issuer](https://curity.io/docs/idsvr-java-plugin-sdk/latest/se/curity/identityserver/sdk/service/NonceTokenIssuer.html) from the Java SDK.\
 This enables the source application to issue a nonce and use it to bootstrap SSO in the target application.\
-The target application uses the nonce, with is validated in a silent authentication flow.
+The target application uses the nonce, with is validated in a single sign on flow.
 
 ## Security Flow
 
@@ -56,8 +56,7 @@ http://idsvr.example.com/oauth/v2/oauth-authorize
     &prompt=login
 ```
 
-The following additional OpenID Connect parameters are used in this redirect.\
-It can be issued on a hidden iframe so that the end user experience is seamless.
+The following additional OpenID Connect parameters are used in this redirect:
 
 | Parameter | Description |
 | --------- | ----------- |
@@ -107,7 +106,7 @@ See the following resources on the Curity website.\
 The code example provides an end-to-end solution that can be run on a standalone computer:
 
 - [The Nonce Authenticator Pattern](https://curity.io/resources/learn/nonce-authenticator-pattern)
-- [Mobile Web SSO Code Example](https://curity.io/resources/learn/mobile-web-integration-example/)
+- [Mobile Web SSO Code Example](https://curity.io/resources/learn/mobile-web-sso)
 
 ## More Information
 
