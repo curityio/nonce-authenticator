@@ -14,10 +14,9 @@ import se.curity.identityserver.sdk.data.tokens.TokenAttributes;
 import se.curity.identityserver.sdk.errors.ErrorCode;
 import se.curity.identityserver.sdk.service.ExceptionFactory;
 import se.curity.identityserver.sdk.service.NonceTokenIssuer;
-import se.curity.identityserver.sdk.service.UserPreferenceManager;
+import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.web.Request;
 import se.curity.identityserver.sdk.web.Response;
-
 import java.util.Optional;
 
 public final class NonceAuthenticatorAuthenticatorRequestHandler implements AuthenticatorRequestHandler<AuthenticationRequestModel>
@@ -25,29 +24,28 @@ public final class NonceAuthenticatorAuthenticatorRequestHandler implements Auth
     private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAuthenticatorRequestHandler.class);
 
     private final NonceTokenIssuer _nti;
-    private final UserPreferenceManager _upm;
+    private final OriginalQueryExtractor _originalQueryExtractor;
     private final ExceptionFactory _exceptionFactory;
 
     public NonceAuthenticatorAuthenticatorRequestHandler(NonceAuthenticatorAuthenticatorPluginConfig config,
                                                          ExceptionFactory exceptionFactory)
     {
         _nti = config.getNonceIssuer();
-        _upm = config.getUserPreferenceManager();
+        _originalQueryExtractor = config.getOriginalQueryExtractor();
         _exceptionFactory = exceptionFactory;
     }
 
     @Override
     public Optional<AuthenticationResult> get(AuthenticationRequestModel authenticationRequestModel, Response response)
     {
-        String username = authenticationRequestModel.getUsername();
-        Optional<TokenAttributes> subjectAttributes= _nti.introspect(username);
+        String nonce = authenticationRequestModel.getNonce();
+        Optional<TokenAttributes> subjectAttributes= _nti.introspect(nonce);
         if (subjectAttributes.isEmpty()) {
             _logger.debug("Nonce not found.");
             throw _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "Unknown nonce");
         }
 
         @Nullable String subject = subjectAttributes.get().get("subject").getValue().toString();
-        _upm.saveUsername(subject);
 
         return Optional.of(
                 new AuthenticationResult(
@@ -59,7 +57,6 @@ public final class NonceAuthenticatorAuthenticatorRequestHandler implements Auth
         );
     }
 
-
     @Override
     public Optional<AuthenticationResult> post(AuthenticationRequestModel authenticationRequestModel, Response response)
     {
@@ -69,6 +66,6 @@ public final class NonceAuthenticatorAuthenticatorRequestHandler implements Auth
     @Override
     public AuthenticationRequestModel preProcess(Request request, Response response)
     {
-        return new AuthenticationRequestModel(request, _upm);
+        return new AuthenticationRequestModel(request, _originalQueryExtractor);
     }
 }
