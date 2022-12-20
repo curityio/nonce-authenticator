@@ -6,13 +6,14 @@ import se.curity.identityserver.sdk.config.annotation.DefaultString;
 import se.curity.identityserver.sdk.config.annotation.Description;
 import se.curity.identityserver.sdk.config.annotation.Name;
 import se.curity.identityserver.sdk.service.NonceTokenIssuer;
+import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.service.UserPreferenceManager;
 
 @SuppressWarnings("InterfaceNeverImplemented")
 public interface NonceAuthenticatorAuthenticatorPluginConfig extends Configuration
 {
      NonceTokenIssuer getNonceIssuer();
-     UserPreferenceManager getUserPreferenceManager();
+     OriginalQueryExtractor getOriginalQueryExtractor();
      @Name("JWKS-Endpoint")
      @Description("Url to the JWKS endpoint. Used to fetch keys to validate the ID Token")
      @DefaultString("")

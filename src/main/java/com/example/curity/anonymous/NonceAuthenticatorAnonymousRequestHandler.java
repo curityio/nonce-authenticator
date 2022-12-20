@@ -17,7 +17,6 @@ import se.curity.identityserver.sdk.service.authentication.AuthenticatorInformat
 import se.curity.identityserver.sdk.web.Produces;
 import se.curity.identityserver.sdk.web.Request;
 import se.curity.identityserver.sdk.web.Response;
-
 import java.time.Duration;
 import java.time.Instant;
 

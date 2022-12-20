@@ -1,21 +1,21 @@
 package com.example.curity.authentication;
 
-import se.curity.identityserver.sdk.service.UserPreferenceManager;
+import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.web.Request;
 
 class AuthenticationRequestModel {
-    private final String _username;
+    private final String _nonce;
 
-    AuthenticationRequestModel(Request request, UserPreferenceManager userPreferenceManager) {
+    AuthenticationRequestModel(Request request, OriginalQueryExtractor originalQueryExtractor) {
+
         if (request.isGetRequest()) {
-            _username = userPreferenceManager.getUsername();
+            _nonce = originalQueryExtractor.getQueryParameterValue("login_hint_token");
         } else {
             throw new RuntimeException("HTTP method not supported");
         }
-
     }
 
-    public String getUsername() {
-        return _username;
+    public String getNonce() {
+        return _nonce;
     }
 }
