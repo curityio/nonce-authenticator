@@ -1,6 +1,6 @@
 package com.example.curity.authentication;
 
-import com.example.curity.config.NonceAuthenticatorAuthenticatorPluginConfig;
+import com.example.curity.config.NonceAuthenticatorPluginConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.curity.identityserver.sdk.Nullable;
@@ -19,16 +19,16 @@ import se.curity.identityserver.sdk.web.Request;
 import se.curity.identityserver.sdk.web.Response;
 import java.util.Optional;
 
-public final class NonceAuthenticatorAuthenticatorRequestHandler implements AuthenticatorRequestHandler<AuthenticationRequestModel>
+public final class NonceAuthenticatorAuthenticationRequestHandler implements AuthenticatorRequestHandler<AuthenticationRequestModel>
 {
-    private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAuthenticatorRequestHandler.class);
+    private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAuthenticationRequestHandler.class);
 
     private final NonceTokenIssuer _nti;
     private final OriginalQueryExtractor _originalQueryExtractor;
     private final ExceptionFactory _exceptionFactory;
 
-    public NonceAuthenticatorAuthenticatorRequestHandler(NonceAuthenticatorAuthenticatorPluginConfig config,
-                                                         ExceptionFactory exceptionFactory)
+    public NonceAuthenticatorAuthenticationRequestHandler(NonceAuthenticatorPluginConfig config,
+                                                          ExceptionFactory exceptionFactory)
     {
         _nti = config.getNonceIssuer();
         _originalQueryExtractor = config.getOriginalQueryExtractor();
