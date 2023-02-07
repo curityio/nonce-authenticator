@@ -1,6 +1,6 @@
 package com.example.curity.anonymous;
 
-import com.example.curity.config.NonceAuthenticatorAuthenticatorPluginConfig;
+import com.example.curity.config.NonceAuthenticatorPluginConfig;
 import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -13,11 +13,11 @@ import se.curity.identityserver.sdk.plugin.ManagedObject;
  * JwtValidator is a ManagedObject to be able to be the validation keys stored, avoiding to download them for every
  * request. Keys will be updated if a key is not found
  */
-public class JwtValidator extends ManagedObject<NonceAuthenticatorAuthenticatorPluginConfig> {
-    NonceAuthenticatorAuthenticatorPluginConfig _config;
+public class JwtValidator extends ManagedObject<NonceAuthenticatorPluginConfig> {
+    NonceAuthenticatorPluginConfig _config;
     JwtConsumer _consumer;
 
-    public JwtValidator(NonceAuthenticatorAuthenticatorPluginConfig configuration) {
+    public JwtValidator(NonceAuthenticatorPluginConfig configuration) {
         super(configuration);
         _config = configuration;
         HttpsJwks httpsJwks = new HttpsJwks(_config.getJKWSEndpoint());

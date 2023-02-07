@@ -10,7 +10,7 @@ import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.service.UserPreferenceManager;
 
 @SuppressWarnings("InterfaceNeverImplemented")
-public interface NonceAuthenticatorAuthenticatorPluginConfig extends Configuration
+public interface NonceAuthenticatorPluginConfig extends Configuration
 {
      NonceTokenIssuer getNonceIssuer();
      OriginalQueryExtractor getOriginalQueryExtractor();

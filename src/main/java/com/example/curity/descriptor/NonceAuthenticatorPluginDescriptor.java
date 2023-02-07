@@ -2,8 +2,8 @@ package com.example.curity.descriptor;
 
 import com.example.curity.anonymous.JwtValidator;
 import com.example.curity.anonymous.NonceAuthenticatorAnonymousRequestHandler;
-import com.example.curity.authentication.NonceAuthenticatorAuthenticatorRequestHandler;
-import com.example.curity.config.NonceAuthenticatorAuthenticatorPluginConfig;
+import com.example.curity.authentication.NonceAuthenticatorAuthenticationRequestHandler;
+import com.example.curity.config.NonceAuthenticatorPluginConfig;
 import se.curity.identityserver.sdk.authentication.AnonymousRequestHandler;
 import se.curity.identityserver.sdk.authentication.AuthenticatorRequestHandler;
 import se.curity.identityserver.sdk.plugin.ManagedObject;
@@ -15,7 +15,7 @@ import java.util.Optional;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableMap;
 
-public final class NonceAuthenticatorAuthenticatorPluginDescriptor implements AuthenticatorPluginDescriptor<NonceAuthenticatorAuthenticatorPluginConfig>
+public final class NonceAuthenticatorPluginDescriptor implements AuthenticatorPluginDescriptor<NonceAuthenticatorPluginConfig>
 {
     @Override
     public String getPluginImplementationType()
@@ -24,15 +24,15 @@ public final class NonceAuthenticatorAuthenticatorPluginDescriptor implements Au
     }
 
     @Override
-    public Class<? extends NonceAuthenticatorAuthenticatorPluginConfig> getConfigurationType()
+    public Class<? extends NonceAuthenticatorPluginConfig> getConfigurationType()
     {
-        return NonceAuthenticatorAuthenticatorPluginConfig.class;
+        return NonceAuthenticatorPluginConfig.class;
     }
 
     @Override
     public Map<String, Class<? extends AuthenticatorRequestHandler<?>>> getAuthenticationRequestHandlerTypes()
     {
-        return unmodifiableMap(singletonMap("index", NonceAuthenticatorAuthenticatorRequestHandler.class));
+        return unmodifiableMap(singletonMap("index", NonceAuthenticatorAuthenticationRequestHandler.class));
     }
 
     @Override
@@ -42,7 +42,7 @@ public final class NonceAuthenticatorAuthenticatorPluginDescriptor implements Au
     }
 
     @Override
-    public Optional<? extends ManagedObject<NonceAuthenticatorAuthenticatorPluginConfig>> createManagedObject(NonceAuthenticatorAuthenticatorPluginConfig configuration)
+    public Optional<? extends ManagedObject<NonceAuthenticatorPluginConfig>> createManagedObject(NonceAuthenticatorPluginConfig configuration)
     {
         return Optional.of(new JwtValidator(configuration));
     }

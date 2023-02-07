@@ -1,12 +1,13 @@
 package com.example.curity.authentication;
 
-import com.example.curity.config.NonceAuthenticatorAuthenticatorPluginConfig;
+import com.example.curity.config.NonceAuthenticatorPluginConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.curity.identityserver.sdk.Nullable;
+import se.curity.identityserver.sdk.attribute.Attribute;
 import se.curity.identityserver.sdk.attribute.Attributes;
 import se.curity.identityserver.sdk.attribute.AuthenticationAttributes;
 import se.curity.identityserver.sdk.attribute.ContextAttributes;
+import se.curity.identityserver.sdk.attribute.MapAttributeValue;
 import se.curity.identityserver.sdk.attribute.SubjectAttributes;
 import se.curity.identityserver.sdk.authentication.AuthenticationResult;
 import se.curity.identityserver.sdk.authentication.AuthenticatorRequestHandler;
@@ -17,18 +18,19 @@ import se.curity.identityserver.sdk.service.NonceTokenIssuer;
 import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.web.Request;
 import se.curity.identityserver.sdk.web.Response;
+
 import java.util.Optional;
 
-public final class NonceAuthenticatorAuthenticatorRequestHandler implements AuthenticatorRequestHandler<AuthenticationRequestModel>
+public final class NonceAuthenticatorAuthenticationRequestHandler implements AuthenticatorRequestHandler<AuthenticationRequestModel>
 {
-    private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAuthenticatorRequestHandler.class);
+    private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAuthenticationRequestHandler.class);
 
     private final NonceTokenIssuer _nti;
     private final OriginalQueryExtractor _originalQueryExtractor;
     private final ExceptionFactory _exceptionFactory;
 
-    public NonceAuthenticatorAuthenticatorRequestHandler(NonceAuthenticatorAuthenticatorPluginConfig config,
-                                                         ExceptionFactory exceptionFactory)
+    public NonceAuthenticatorAuthenticationRequestHandler(NonceAuthenticatorPluginConfig config,
+                                                          ExceptionFactory exceptionFactory)
     {
         _nti = config.getNonceIssuer();
         _originalQueryExtractor = config.getOriginalQueryExtractor();
@@ -39,18 +41,20 @@ public final class NonceAuthenticatorAuthenticatorRequestHandler implements Auth
     public Optional<AuthenticationResult> get(AuthenticationRequestModel authenticationRequestModel, Response response)
     {
         String nonce = authenticationRequestModel.getNonce();
-        Optional<TokenAttributes> subjectAttributes= _nti.introspect(nonce);
-        if (subjectAttributes.isEmpty()) {
+        Optional<TokenAttributes> idTokenAttributes= _nti.introspect(nonce);
+        if (idTokenAttributes.isEmpty()) {
             _logger.debug("Nonce not found.");
             throw _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "Unknown nonce");
         }
-
-        @Nullable String subject = subjectAttributes.get().get("subject").getValue().toString();
+        MapAttributeValue mav = MapAttributeValue.of(idTokenAttributes.get());
+        String subject = mav.get("sub").getValue().toString();
+        SubjectAttributes sa = SubjectAttributes.of(
+                subject,Attributes.of(
+                        Attribute.of("id_token", mav)));
 
         return Optional.of(
                 new AuthenticationResult(
-                        AuthenticationAttributes.of(
-                                SubjectAttributes.of(subject, Attributes.empty()),
+                        AuthenticationAttributes.of(sa,
                                 ContextAttributes.empty()
                         )
                 )

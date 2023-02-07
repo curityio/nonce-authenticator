@@ -1,6 +1,6 @@
 package com.example.curity.anonymous;
 
-import com.example.curity.config.NonceAuthenticatorAuthenticatorPluginConfig;
+import com.example.curity.config.NonceAuthenticatorPluginConfig;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtContext;
@@ -17,19 +17,21 @@ import se.curity.identityserver.sdk.service.authentication.AuthenticatorInformat
 import se.curity.identityserver.sdk.web.Produces;
 import se.curity.identityserver.sdk.web.Request;
 import se.curity.identityserver.sdk.web.Response;
+
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 
 @Produces(Produces.ContentType.JSON)
 public class NonceAuthenticatorAnonymousRequestHandler implements AnonymousRequestHandler<AnonymousRequestModel> {
 
     private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAnonymousRequestHandler.class);
-    private final NonceAuthenticatorAuthenticatorPluginConfig _config;
+    private final NonceAuthenticatorPluginConfig _config;
     private final NonceTokenIssuer _nti;
     private JwtValidator _validator;
 
     public NonceAuthenticatorAnonymousRequestHandler(JwtValidator validator,
-                                                     NonceAuthenticatorAuthenticatorPluginConfig config,
+                                                     NonceAuthenticatorPluginConfig config,
                                                      ExceptionFactory exceptionFactory,
                                                      AuthenticatorInformationProvider authInfoProvider) {
         _config = config;
@@ -58,13 +60,14 @@ public class NonceAuthenticatorAnonymousRequestHandler implements AnonymousReque
         String token = anonymousRequestModel.getToken();
         String nonce = null;
         try {
-            String subject = getSubject(token);
+            JwtContext context = _validator.validate(token);
+            Map claimsMap = context.getJwtClaims().getClaimsMap();
             Instant now = Instant.now();
             Instant expires = now.plus(Duration.ofSeconds(_config.getNonceValidity()));
-            TokenAttributes attributes = new TokenAttributes(expires, now, Attributes.of("subject", subject));
+            TokenAttributes attributes = new TokenAttributes(expires, now, Attributes.fromMap(claimsMap));
             nonce = _nti.issue(attributes);
 
-        } catch (MalformedClaimException | InvalidJwtException e) {
+        } catch (InvalidJwtException e) {
             _logger.warn("Incoming JWT is not valid. {}", e.getMessage());
             e.printStackTrace();
         } catch (TokenIssuerException e) {
