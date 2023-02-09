@@ -77,12 +77,6 @@ public class NonceAuthenticatorAnonymousRequestHandler implements AnonymousReque
         return nonce;
     }
 
-    private String getSubject(String token) throws InvalidJwtException, MalformedClaimException {
-        JwtContext context = _validator.validate(token);
-        return context.getJwtClaims().getSubject();
-    }
-
-
     private void addNonce(AnonymousRequestModel anonymousRequestModel, Response response) {
         String nonce = createNonce(anonymousRequestModel);
         if (nonce != null) {
