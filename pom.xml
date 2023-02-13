@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example.curity</groupId>
-    <artifactId>nonce-authenticator</artifactId>
+    <groupId>io.curity.identityserver.plugin</groupId>
+    <artifactId>identityserver.plugins.authenticators.nonce</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
@@ -50,6 +50,23 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>customer-release-repo</id>
+            <url>https://nexus.curityio.net/repository/customer-release-repo/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>customer-snapshot-repo</id>
+            <url>https://nexus.curityio.net/repository/customer-snapshot-repo</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>se.curity.identityserver</groupId>
@@ -68,6 +85,17 @@
             <artifactId>jose4j</artifactId>
             <version>0.9.1</version>
         </dependency>
-
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>customer-release-repo</id>
+            <name>Curity Nexus Release Repository</name>
+            <url>https://nexus.curityio.net/repository/customer-release-repo/</url>
+        </repository>
+        <snapshotRepository>
+            <id>customer-snapshot-repo</id>
+            <name>Curity Nexus Snapshot Repository</name>
+            <url>https://nexus.curityio.net/repository/customer-snapshot-repo/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
