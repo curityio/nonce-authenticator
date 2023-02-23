@@ -52,7 +52,7 @@ http://idsvr.example.com/oauth/v2/oauth-authorize
     &state=NlAoISfdL1DxPdNGFBljlVuB1GDjgGARmqDcxtHhV8iKNYu6ECS2KOavDHpI3eLN
     &scope=openid%20profile
     &acr_values=urn:se:curity:authentication:nonce:nonce1
-    &login_hint=OFiicYQJYY2phWnD5nFMflid5Du82ycW
+    &login_hint_token=OFiicYQJYY2phWnD5nFMflid5Du82ycW
     &prompt=login
 ```
 
@@ -61,7 +61,7 @@ The following additional OpenID Connect parameters are used in this redirect:
 | Parameter | Description |
 | --------- | ----------- |
 | acr_values | Forces the nonce authenticator to be used
-| login_hint | Supplies the nonce for validation |
+| login_hint_token | Supplies the nonce for validation |
 | prompt | Prevents nonce authentication being bypassed via SSO cookies |
 
 The target OAuth client then authenticates silently, with no user prompts.\
