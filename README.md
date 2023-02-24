@@ -28,7 +28,7 @@ The endpoint format is `[BASE URL]` + `[Anonymous Authentication Endpoint]` + `[
 The client can post its ID token to this endpoint, to create a nonce:
 
 ```
-curl -X POST 'https://idsvr.example.com/authentication/anonymous/nonce1?token=eyJraWQi...' \
+curl -X POST 'https://idsvr.example.com/authentication/anonymous/nonce1' \
     -H 'Content-Type: application/x-www-form-urlencoded' \
     --data-urlencode 'token=eyJraWQi...'
 ```
