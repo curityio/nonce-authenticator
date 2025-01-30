@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 Curity AB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.curity.authentication;
 
 import com.example.curity.config.NonceAuthenticatorPluginConfig;
@@ -18,8 +34,11 @@ import se.curity.identityserver.sdk.service.NonceTokenIssuer;
 import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.web.Request;
 import se.curity.identityserver.sdk.web.Response;
+import se.curity.identityserver.sdk.web.ResponseModel;
 
 import java.util.Optional;
+
+import static java.util.Collections.emptyMap;
 
 public final class NonceAuthenticatorAuthenticationRequestHandler implements AuthenticatorRequestHandler<AuthenticationRequestModel>
 {
@@ -29,8 +48,7 @@ public final class NonceAuthenticatorAuthenticationRequestHandler implements Aut
     private final OriginalQueryExtractor _originalQueryExtractor;
     private final ExceptionFactory _exceptionFactory;
 
-    public NonceAuthenticatorAuthenticationRequestHandler(NonceAuthenticatorPluginConfig config,
-                                                          ExceptionFactory exceptionFactory)
+    public NonceAuthenticatorAuthenticationRequestHandler(NonceAuthenticatorPluginConfig config, ExceptionFactory exceptionFactory)
     {
         _nti = config.getNonceIssuer();
         _originalQueryExtractor = config.getOriginalQueryExtractor();
@@ -40,36 +58,42 @@ public final class NonceAuthenticatorAuthenticationRequestHandler implements Aut
     @Override
     public Optional<AuthenticationResult> get(AuthenticationRequestModel authenticationRequestModel, Response response)
     {
-        String nonce = authenticationRequestModel.getNonce();
-        Optional<TokenAttributes> idTokenAttributes= _nti.introspect(nonce);
-        if (idTokenAttributes.isEmpty()) {
-            _logger.debug("Nonce not found.");
-            throw _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "Unknown nonce");
-        }
-        MapAttributeValue mav = MapAttributeValue.of(idTokenAttributes.get());
-        String subject = mav.get("sub").getValue().toString();
-        SubjectAttributes sa = SubjectAttributes.of(
-                subject,Attributes.of(
-                        Attribute.of("id_token", mav)));
-
-        return Optional.of(
-                new AuthenticationResult(
-                        AuthenticationAttributes.of(sa,
-                                ContextAttributes.empty()
-                        )
-                )
-        );
+        _logger.debug("Received GET authentication request");
+        return handleAuthentication(authenticationRequestModel);
     }
 
     @Override
     public Optional<AuthenticationResult> post(AuthenticationRequestModel authenticationRequestModel, Response response)
     {
-        throw _exceptionFactory.methodNotAllowed();
+        _logger.debug("Received POST authentication request");
+        return handleAuthentication(authenticationRequestModel);
+    }
+
+    private Optional<AuthenticationResult> handleAuthentication(AuthenticationRequestModel authenticationRequestModel)
+    {
+        String nonce = authenticationRequestModel.getNonce();
+        if (nonce == null)
+        {
+            return Optional.empty();
+        }
+
+        TokenAttributes idTokenAttributes = _nti.introspect(nonce).orElseThrow(() -> {
+            _logger.debug("Nonce not found.");
+            return _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "Unknown nonce");
+        });
+
+        MapAttributeValue mav = MapAttributeValue.of(idTokenAttributes);
+        String subject = mav.get("sub").getValue().toString();
+        SubjectAttributes subjectAttributes = SubjectAttributes.of(subject, Attributes.of(Attribute.of("id_token", mav)));
+
+        return Optional.of(new AuthenticationResult(AuthenticationAttributes.of(subjectAttributes, ContextAttributes.empty())));
     }
 
     @Override
     public AuthenticationRequestModel preProcess(Request request, Response response)
     {
+        response.setResponseModel(ResponseModel.templateResponseModel(emptyMap(), "authenticate/get"), Response.ResponseModelScope.ANY);
         return new AuthenticationRequestModel(request, _originalQueryExtractor);
     }
 }
+
