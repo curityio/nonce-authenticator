@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.example.curity.authentication;
+package io.curity.identityserver.plugin.nonce.authentication;
 
 import se.curity.identityserver.sdk.service.OriginalQueryExtractor;
 import se.curity.identityserver.sdk.web.Request;
 
-class AuthenticationRequestModel
+public final class AuthenticationRequestModel
 {
     private static final String LOGIN_HINT_TOKEN = "login_hint_token";
     private String _nonce;

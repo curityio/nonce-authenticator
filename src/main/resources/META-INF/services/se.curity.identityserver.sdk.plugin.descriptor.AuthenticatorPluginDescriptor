@@ -1,1 +1,1 @@
-com.example.curity.descriptor.NonceAuthenticatorPluginDescriptor
+io.curity.identityserver.plugin.nonce.descriptor.NonceAuthenticatorPluginDescriptor

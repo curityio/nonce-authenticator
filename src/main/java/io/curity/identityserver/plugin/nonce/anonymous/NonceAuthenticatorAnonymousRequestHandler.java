@@ -1,7 +1,22 @@
-package com.example.curity.anonymous;
+/*
+ *  Copyright 2025 Curity AB
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
-import com.example.curity.config.NonceAuthenticatorPluginConfig;
-import org.jose4j.jwt.MalformedClaimException;
+package io.curity.identityserver.plugin.nonce.anonymous;
+
+import io.curity.identityserver.plugin.nonce.config.NonceAuthenticatorPluginConfig;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.slf4j.Logger;
@@ -23,7 +38,8 @@ import java.time.Instant;
 import java.util.Map;
 
 @Produces(Produces.ContentType.JSON)
-public class NonceAuthenticatorAnonymousRequestHandler implements AnonymousRequestHandler<AnonymousRequestModel> {
+public final class NonceAuthenticatorAnonymousRequestHandler implements AnonymousRequestHandler<AnonymousRequestModel>
+{
 
     private static final Logger _logger = LoggerFactory.getLogger(NonceAuthenticatorAnonymousRequestHandler.class);
     private final NonceAuthenticatorPluginConfig _config;
@@ -33,57 +49,69 @@ public class NonceAuthenticatorAnonymousRequestHandler implements AnonymousReque
     public NonceAuthenticatorAnonymousRequestHandler(JwtValidator validator,
                                                      NonceAuthenticatorPluginConfig config,
                                                      ExceptionFactory exceptionFactory,
-                                                     AuthenticatorInformationProvider authInfoProvider) {
+                                                     AuthenticatorInformationProvider authInfoProvider)
+    {
         _config = config;
         _nti = config.getNonceIssuer();
         _validator = validator;
     }
 
     @Override
-    public AnonymousRequestModel preProcess(Request request, Response response) {
+    public AnonymousRequestModel preProcess(Request request, Response response)
+    {
         return new AnonymousRequestModel(request);
     }
 
     @Override
-    public Void get(AnonymousRequestModel anonymousRequestModel, Response response) {
+    public Void get(AnonymousRequestModel anonymousRequestModel, Response response)
+    {
         addNonce(anonymousRequestModel, response);
         return null;
     }
 
     @Override
-    public Void post(AnonymousRequestModel anonymousRequestModel, Response response) {
+    public Void post(AnonymousRequestModel anonymousRequestModel, Response response)
+    {
         addNonce(anonymousRequestModel, response);
         return null;
     }
 
-    private String createNonce(AnonymousRequestModel anonymousRequestModel) {
+    private String createNonce(AnonymousRequestModel anonymousRequestModel)
+    {
         String token = anonymousRequestModel.getToken();
         String nonce = null;
-        try {
+        try
+        {
             JwtContext context = _validator.validate(token);
             Map claimsMap = context.getJwtClaims().getClaimsMap();
             Instant now = Instant.now();
             Instant expires = now.plus(Duration.ofSeconds(_config.getNonceValidity()));
             TokenAttributes attributes = new TokenAttributes(expires, now, Attributes.fromMap(claimsMap));
             nonce = _nti.issue(attributes);
-
-        } catch (InvalidJwtException e) {
+        }
+        catch (InvalidJwtException e)
+        {
             _logger.warn("Incoming JWT is not valid. {}", e.getMessage());
             e.printStackTrace();
-        } catch (TokenIssuerException e) {
+        }
+        catch (TokenIssuerException e)
+        {
             _logger.warn("Unable to issue token. {}", e.getMessage());
             e.printStackTrace();
         }
         return nonce;
     }
 
-    private void addNonce(AnonymousRequestModel anonymousRequestModel, Response response) {
+    private void addNonce(AnonymousRequestModel anonymousRequestModel, Response response)
+    {
         String nonce = createNonce(anonymousRequestModel);
-        if (nonce != null) {
+        if (nonce != null)
+        {
             response.putViewData("nonce", nonce, HttpStatus.OK);
-        } else {
+        }
+        else
+        {
             response.setHttpStatus(HttpStatus.BAD_REQUEST);
         }
     }
-
 }
