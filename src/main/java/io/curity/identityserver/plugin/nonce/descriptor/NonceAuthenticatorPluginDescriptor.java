@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.example.curity.descriptor;
+package io.curity.identityserver.plugin.nonce.descriptor;
 
-import com.example.curity.anonymous.JwtValidator;
-import com.example.curity.anonymous.NonceAuthenticatorAnonymousRequestHandler;
-import com.example.curity.authentication.NonceAuthenticatorAuthenticationRequestHandler;
-import com.example.curity.authentication.templates.NonceRepresentationFunction;
-import com.example.curity.config.NonceAuthenticatorPluginConfig;
+import io.curity.identityserver.plugin.nonce.anonymous.JwtValidator;
+import io.curity.identityserver.plugin.nonce.anonymous.NonceAuthenticatorAnonymousRequestHandler;
+import io.curity.identityserver.plugin.nonce.authentication.NonceAuthenticatorAuthenticationRequestHandler;
+import io.curity.identityserver.plugin.nonce.authentication.templates.NonceRepresentationFunction;
+import io.curity.identityserver.plugin.nonce.config.NonceAuthenticatorPluginConfig;
 import se.curity.identityserver.sdk.Nullable;
 import se.curity.identityserver.sdk.authentication.AnonymousRequestHandler;
 import se.curity.identityserver.sdk.authentication.AuthenticatorRequestHandler;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.curity.authentication.templates;
+package io.curity.identityserver.plugin.nonce.authentication.templates;
 
 import se.curity.identityserver.sdk.haapi.HaapiContract;
 import se.curity.identityserver.sdk.haapi.Message;

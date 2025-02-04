@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.example.curity.authentication;
+package io.curity.identityserver.plugin.nonce.authentication;
 
-import com.example.curity.config.NonceAuthenticatorPluginConfig;
+import io.curity.identityserver.plugin.nonce.config.NonceAuthenticatorPluginConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.curity.identityserver.sdk.attribute.Attribute;
