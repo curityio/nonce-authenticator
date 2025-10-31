@@ -78,8 +78,8 @@ public final class NonceAuthenticatorAuthenticationRequestHandler implements Aut
         }
 
         TokenAttributes idTokenAttributes = _nti.introspect(nonce).orElseThrow(() -> {
-            _logger.debug("Nonce not found.");
-            return _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "Unknown nonce");
+            _logger.debug("The provided nonce is invalid or has expired");
+            return _exceptionFactory.forbiddenException(ErrorCode.AUTHENTICATION_FAILED, "unknown.nonce");
         });
 
         MapAttributeValue mav = MapAttributeValue.of(idTokenAttributes);
