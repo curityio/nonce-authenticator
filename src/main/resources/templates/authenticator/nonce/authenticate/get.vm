@@ -22,7 +22,7 @@
     #if ($error)
         #set($isHidden = "not-hidden")
     #end
-    
+
 <div class="mt3 px3 lg-px4" id="user-error" $!isHidden>
     <div class="alert alert-danger px4">
         $!error<br>
@@ -35,7 +35,7 @@
         #message("${_templatePrefix}.view.title")
     </h1>
 
-    <label for="logintoken" class="$!_errorClass">#message("${_templatePrefix}.view.token")</label>
+    <label for="login_hint_token" class="$!_errorClass">#message("${_templatePrefix}.view.token")</label>
     <input type="text" id="login_hint_token" name="login_hint_token" class="block full-width mb1 field-light $!_errorClass"
            autocapitalize="none"
            required
