@@ -20,7 +20,7 @@ You may obtain a copy of the License at
 
     <groupId>io.curity.identityserver.plugin</groupId>
     <artifactId>identityserver.plugins.authenticators.nonce</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>Curity Nonce Authenticator</name>
